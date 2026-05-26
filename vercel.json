@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build:web",
   "outputDirectory": "apps/web/dist",
-  "framework": "vite",
-  "regions": ["sin1", "dxb1"]
+  "framework": "vite"
 }
+
