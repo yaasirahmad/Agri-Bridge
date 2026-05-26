@@ -1,0 +1,38 @@
+[
+  {
+    "listing_id": "L-101",
+    "farmer_id": "F-001",
+    "crop_name": "Punjab Basmati Rice (Premium Long Grain)",
+    "harvest_date": "2026-05-10",
+    "volume_metric_tons": 120.0,
+    "storage_condition": "Silage temperature-controlled, 12% moisture limit",
+    "certifications": ["Halal", "GAP", "Phytosanitary Export Clearance"],
+    "sustainability_score": "A+",
+    "water_savings_pct": 42,
+    "gps_location": "32.0740° N, 72.6861° E"
+  },
+  {
+    "listing_id": "L-102",
+    "farmer_id": "F-002",
+    "crop_name": "Organic Sindh Dates (Sukkuri S-1)",
+    "harvest_date": "2026-05-18",
+    "volume_metric_tons": 210.0,
+    "storage_condition": "Cold storage, packed in dry containers",
+    "certifications": ["Halal", "Organic"],
+    "sustainability_score": "A++",
+    "water_savings_pct": 45,
+    "gps_location": "27.5295° N, 68.7617° E"
+  },
+  {
+    "listing_id": "L-103",
+    "farmer_id": "F-003",
+    "crop_name": "Sidr Honey (A+ Grade Export Spec)",
+    "harvest_date": "2026-04-30",
+    "volume_metric_tons": 25.0,
+    "storage_condition": "Hermetically sealed food jars, stored under 20°C",
+    "certifications": ["Halal", "GMP"],
+    "sustainability_score": "A++",
+    "water_savings_pct": 52,
+    "gps_location": "33.0506° N, 71.1558° E"
+  }
+]

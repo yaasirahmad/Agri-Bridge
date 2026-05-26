@@ -1,0 +1,6 @@
+{
+  "name": "AgriBridge",
+  "description": "Bilateral food pipeline platform connecting Pakistani farmers with Saudi Arabian agribusiness investors, aligned with Vision 2030 and SDG 2.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

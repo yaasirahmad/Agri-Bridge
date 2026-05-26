@@ -1,0 +1,32 @@
+[
+  {
+    "signal_id": "DS-301",
+    "commodity": "Punjab Basmati Rice",
+    "required_quarterly_volume_tons": 5000.0,
+    "average_pricing_limit_usd_per_ton": 950.0,
+    "minimum_compliance_score": "A",
+    "origin_preferences": ["Punjab Basin, PK"],
+    "required_certifications": ["SFDA Quarantine Clearance", "Phytosanitary Cert", "Halal Certificate"],
+    "strategic_reserve_urgency": "High"
+  },
+  {
+    "signal_id": "DS-302",
+    "commodity": "Organic Sindh Dates (Aseel & Sukkuri)",
+    "required_quarterly_volume_tons": 3500.0,
+    "average_pricing_limit_usd_per_ton": 1400.0,
+    "minimum_compliance_score": "A",
+    "origin_preferences": ["Sindh Khairpur Oasis, PK"],
+    "required_certifications": ["SFDA Compliance", "Halal Certification"],
+    "strategic_reserve_urgency": "Medium"
+  },
+  {
+    "signal_id": "DS-303",
+    "commodity": "Sidr Honey (Premium Grade)",
+    "required_quarterly_volume_tons": 500.0,
+    "average_pricing_limit_usd_per_ton": 10000.0,
+    "minimum_compliance_score": "A++",
+    "origin_preferences": ["Karak Mountain Range, PK"],
+    "required_certifications": ["Halal Certification", "SGS Lab Purity Assessment"],
+    "strategic_reserve_urgency": "Low"
+  }
+]

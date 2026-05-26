@@ -1,0 +1,47 @@
+[
+  {
+    "farmer_id": "F-001",
+    "name": "Muhammad Arshad",
+    "region": "Sargodha, Punjab",
+    "farm_size_acres": 12.5,
+    "crops_grown": ["Punjab Basmati Rice", "Seedless Kinnow Orange"],
+    "certification_status": {
+      "phyto_sanitary": true,
+      "halal": true,
+      "organic_gap": true
+    },
+    "water_savings_index": 42,
+    "sustainability_score": 92,
+    "contact_type": "Direct WhatsApp / Agronomic cooperative"
+  },
+  {
+    "farmer_id": "F-002",
+    "name": "Zainab Khairpur",
+    "region": "Khairpur, Sindh",
+    "farm_size_acres": 8.0,
+    "crops_grown": ["Organic Sindh Dates (Aseel)", "Organic Sindh Dates (Sukkuri)"],
+    "certification_status": {
+      "phyto_sanitary": true,
+      "halal": true,
+      "organic_gap": false
+    },
+    "water_savings_index": 38,
+    "sustainability_score": 88,
+    "contact_type": "Regional cooperative manager"
+  },
+  {
+    "farmer_id": "F-003",
+    "name": "Ali Nasirabad",
+    "region": "Nasirabad, Balochistan",
+    "farm_size_acres": 18.2,
+    "crops_grown": ["Feed Alfalfa Hay", "Local Irri-6 Rice"],
+    "certification_status": {
+      "phyto_sanitary": false,
+      "halal": true,
+      "organic_gap": false
+    },
+    "water_savings_index": 30,
+    "sustainability_score": 75,
+    "contact_type": "Balochistan Agricultural Board Agent"
+  }
+]

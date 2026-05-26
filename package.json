@@ -1,0 +1,14 @@
+{
+  "name": "agribridge-root",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Root orchestrator for AgriBridge: Pakistan-Saudi Arabia Sustainable Food Pipeline",
+  "scripts": {
+    "dev:web": "npm run dev --prefix apps/web",
+    "dev:worker": "npm run dev --prefix workers",
+    "build:web": "npm run build --prefix apps/web",
+    "lint:web": "npm run lint --prefix apps/web",
+    "lint:worker": "npm run lint --prefix workers",
+    "postinstall": "npm install --prefix apps/web"
+  }
+}
