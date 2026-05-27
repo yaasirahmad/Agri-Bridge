@@ -92,45 +92,8 @@ export default function DocumentUploader({
           JSON.stringify({ status: 'VERIFIED', certificateId: `CERT-${newDoc.id.toUpperCase()}`, scope: parsed.scope })
         );
       } catch (err: any) {
-        console.error("Gemini upload extraction failed:", err);
-        triggerNotification("Document processed successfully.", "success");
-        
-        // High-integrity fallback
-        let authority = 'Department of Plant Protection, Ministry of Food Security, PK';
-        let expiry = '2027-02-18';
-        let scope = 'Phytosanitary Export Clearance Compliance';
-
-        if (selectedDocType === 'soil') {
-          authority = 'NARC Soil & Water Quality Directorate, PK';
-          expiry = '2026-12-31';
-          scope = 'Bilateral SDG 2 Sustainable Agriculture Assessment';
-        } else if (selectedDocType === 'halal') {
-          authority = 'Halal Certification Board of Pakistan (HAP)';
-          expiry = '2027-05-24';
-          scope = 'Certified Halal Food Trade Pipeline Standard';
-        }
-
-        const newDoc = {
-          id: `doc-${Date.now().toString().slice(-4)}`,
-          name: file.name,
-          type: selectedDocType,
-          status: 'Verified' as const,
-          date: new Date().toISOString().replace('T', ' ').slice(0, 16),
-          parsedData: {
-            authority,
-            expiry,
-            scope
-          }
-        };
-
-        setUploadedDocs((prev) => [newDoc, ...prev]);
-        
-        onLogSystemActivity(
-          'Gemini API',
-          'POST',
-          '/api/docs/verification-callback',
-          JSON.stringify({ status: 'VERIFIED_BASELINE', certificateId: `CERT-${newDoc.id.toUpperCase()}`, scope })
-        );
+        console.error("Document extraction error:", err);
+        triggerNotification("Document could not be processed. Please try again.", "info");
       } finally {
         setIsAnalyzingDoc(false);
       }

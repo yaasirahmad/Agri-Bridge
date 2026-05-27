@@ -1,7 +1,0 @@
-name = "agribridge-gateway"
-main = "src/index.ts"
-compatibility_date = "2026-01-01"
-
-
-# Secret keys like GROQ_API_KEY, GEMINI_API_KEY, and COHERE_API_KEY
-# should be added locally via a .dev.vars file or deployed via `wrangler secret put`.

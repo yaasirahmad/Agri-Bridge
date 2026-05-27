@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Sprout, Briefcase, Activity, CheckCircle, Info, ChevronUp, ChevronDown } from 'lucide-react';
 import { CropSubmission, SupplierRow, SystemLog, ChatMessage } from './types';
-import { INITIAL_CROP_LOGS, INITIAL_SYSTEM_LOGS, CHAT_KNOWLEDGE_BASE, DEFAULT_CHAT_REPLY, SUPPLIER_DATA } from './data';import { sendGatewayChatMessage } from './lib/worker-client';
+import { INITIAL_CROP_LOGS, INITIAL_SYSTEM_LOGS, SUPPLIER_DATA } from './data';import { sendGatewayChatMessage } from './lib/worker-client';
 
 // Portals
 import FarmerPortal from './app/farmer/page';
@@ -123,24 +123,6 @@ export default function App() {
 
       setChatMessages((prev) => [...prev, assistantMsg]);
       triggerNotification('Response received from crop advisor.', 'success');
-    } catch (err: any) {
-      console.error("Groq chat query failed, using localized knowledge base fallback:", err);
-      
-      // Resilient local search matching fallback
-      const normalizedQuery = textToSend.toLowerCase();
-      const match = CHAT_KNOWLEDGE_BASE.find((kb) =>
-        kb.keywords.some((keyword) => normalizedQuery.includes(keyword))
-      );
-      const botReplyText = match ? match.answer : DEFAULT_CHAT_REPLY;
-
-      const assistantMsg: ChatMessage = {
-        id: `msg-a-${Date.now()}`,
-        sender: 'assistant',
-        text: botReplyText,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      };
-
-      setChatMessages((prev) => [...prev, assistantMsg]);
     } finally {
       setIsBotTyping(false);
     }
