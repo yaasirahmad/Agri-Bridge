@@ -30,6 +30,17 @@ export interface SupplierSearchDoc {
 }
 
 /**
+ * Creates an AbortSignal that times out after the specified milliseconds.
+ * This ensures fetch calls fail fast when the gateway is unreachable,
+ * allowing the UI to seamlessly fall back to the local mock responses.
+ */
+function createTimeoutSignal(ms: number): AbortSignal {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
+/**
  * Proxies B2B and agronomy chat queries to Groq Cloud through the Cloudflare Worker.
  */
 export async function sendGatewayChatMessage(messages: ChatMessageParam[]): Promise<string> {
@@ -40,6 +51,7 @@ export async function sendGatewayChatMessage(messages: ChatMessageParam[]): Prom
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ messages }),
+      signal: createTimeoutSignal(4000),
     });
 
     if (!response.ok) {
@@ -69,6 +81,7 @@ export async function parseGatewayDocument(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ fileBase64, fileName, docType }),
+      signal: createTimeoutSignal(8000),
     });
 
     if (!response.ok) {
@@ -96,6 +109,7 @@ export async function searchAgriSuppliers(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ query, documents }),
+      signal: createTimeoutSignal(4000),
     });
 
     if (!response.ok) {
