@@ -2,6 +2,8 @@
 // Provides high-fidelity, context-aware responses for chat, document parsing,
 // and semantic supplier search — all running directly in the browser.
 
+import { GoogleGenAI } from '@google/genai';
+
 export interface ChatMessageParam {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -27,6 +29,40 @@ export interface SupplierSearchDoc {
 }
 
 /**
+ * Call the live Gemini API using the @google/genai SDK when a key is present.
+ */
+async function callLiveGemini(messages: ChatMessageParam[], apiKey: string): Promise<string> {
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    
+    // Format message history for standard Gemini model inputs
+    const contents = messages.map((msg) => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }],
+    }));
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: contents,
+      config: {
+        systemInstruction: `You are Ziraat AI, an agronomic, water-management (AWD), and trade compliance advisor for AgriBridge (Pakistan-Saudi Arabia Sustainable Food Pipeline).
+You assist Pakistani smallholders and Saudi corporate buyers.
+CRITICAL DIRECTIONS:
+1. Detect the user's language: Urdu script, Roman Urdu (Urdu written in Latin/English alphabets), or English.
+2. Reply ONLY in the same language. If the query is in Roman Urdu (e.g. "kia hal ha", "pani kaise bachayein"), reply in natural, conversational Roman Urdu. If in Urdu script, reply in Urdu script. If English, reply in English.
+3. Keep your answers extremely direct, concise, and focused. Do NOT write long paragraphs or give irrelevant details. Limit response to 1-3 sentences unless they specifically ask for deep details.
+4. If they send a simple greeting like "hello", "kia hal ha", "salam", respond with a warm, polite, and brief greeting in their exact language.`
+      }
+    });
+
+    return response.text || "I apologize, I could not generate a response. Please try again.";
+  } catch (error) {
+    console.error("Error calling live Gemini API:", error);
+    throw error;
+  }
+}
+
+/**
  * Intelligent agricultural advisory chat powered by contextual keyword matching.
  * Returns expert-level agronomy and trade compliance responses.
  */
@@ -35,181 +71,152 @@ export async function sendChatMessage(messages: ChatMessageParam[]): Promise<str
   await new Promise((resolve) => setTimeout(resolve, 600 + Math.random() * 400));
 
   const lastUserMessage = messages[messages.length - 1]?.content || "";
-  const normalizedQuery = lastUserMessage.toLowerCase();
+  const normalizedQuery = lastUserMessage.toLowerCase().trim();
 
-  // 1. Urdu / Roman Urdu for Rice, Water, Irrigation
-  if (
-    normalizedQuery.includes("water") || 
-    normalizedQuery.includes("rice") || 
-    normalizedQuery.includes("irrigation") ||
-    normalizedQuery.includes("پانی") ||
-    normalizedQuery.includes("pani") ||
-    normalizedQuery.includes("چاول") ||
-    normalizedQuery.includes("chawal")
-  ) {
-    return `**[Urdu / اردو]**
-پنجاب میں باسمتی چاول کی کاشت کے لیے متبادل گیلا اور خشک کرنے (AWD) کا طریقہ کار:
+  // Try live Gemini API if an API key is available and configured
+  const apiKey = 
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) || 
+    (typeof import.meta !== 'undefined' && import.meta.env?.GEMINI_API_KEY) ||
+    (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) ||
+    "";
 
-1. **پانی کی حد (Water Threshold):** 15 سینٹی میٹر گہرائی میں رکھے گئے سادہ پی وی سی پائپ کا استعمال کرتے ہوئے مٹی کی نمی کی نگرانی کریں۔ جب پانی سطح سے 15 سینٹی میٹر نیچے جائے تب ہی دوبارہ پانی لگائیں۔
-2. **پانی کی بچت:** یہ باسمتی چاول کی کل پیداوار کو متاثر کیے بغیر **42 فیصد تک میٹھے پانی** کی بچت کرتا ہے۔
-3. **مٹی کی صحت:** جڑوں کو ہوا دینے سے میتھین گیس کا اخراج کم ہوتا ہے، جس سے فصل کا کاربن فٹ پرنٹ **2.2 میٹرک ٹن CO2e فی ہیکٹر** تک کم ہو جاتا ہے۔
-
----
-
-**[English]**
-Optimizing basmati rice cultivation in Punjab involves a three-stage Alternate Wetting and Drying (AWD) protocol:
-
-1. **Water Thresholds:** Monitor soil moisture using simple PVC field tubes placed 15cm deep. Refrain from irrigating until the water level drops below 15cm from the soil surface.
-2. **Savings Index:** This saves up to **42% of freshwater** resources without affecting basmati millable yield.
-3. **Soil Health:** Aerating the root zone periodically suppresses anaerobic methanogenesis, reducing crop carbon footprint by up to **2.2 mt CO2e per hectare**.`;
+  if (apiKey && apiKey !== "MY_GEMINI_API_KEY" && apiKey.trim() !== "") {
+    try {
+      const liveReply = await callLiveGemini(messages, apiKey);
+      return liveReply;
+    } catch (e) {
+      console.warn("Falling back to local intelligent engine due to Gemini API error:", e);
+    }
   }
 
-  // 2. Urdu / Roman Urdu for Dates, Fertilizer, Khairpur
-  if (
-    normalizedQuery.includes("dates") || 
-    normalizedQuery.includes("khairpur") || 
-    normalizedQuery.includes("fertilizer") ||
-    normalizedQuery.includes("کھجور") ||
-    normalizedQuery.includes("khajoor") ||
-    normalizedQuery.includes("کھاد") ||
-    normalizedQuery.includes("khad")
-  ) {
-    return `**[Urdu / اردو]**
-خیرپور کے اصیل اور سکھڑی کھجور کے درختوں کے لیے پوٹاشیم کی خوراک اور نمی کی نگرانی:
-
-1. **کھاد کی خوراک:** 'خلال' اور 'رطب' مراحل کے دوران کھجور کے پھل کو بڑا اور صحت مند بنانے کے لیے نامیاتی کھاد (Organic Compost) کے ساتھ پوٹاشیم نائٹریٹ کا استعمال کریں۔
-2. **فنگس سے تحفظ:** آبپاشی کے لیے مائیکرو اسپرینکلنگ سسٹم کا استعمال کریں تاکہ جڑوں کو سڑنے سے بچایا جا سکے (اس سے روایتی سیلابی طریقے کے مقابلے میں 38 فیصد پانی کی بچت ہوتی ہے)۔
-3. **سعودی برآمدی معیار:** اپنی فصل کو سعودی فوڈ اینڈ ڈرگ اتھارٹی (SFDA) کی سخت فائٹوسینٹری شرائط کے مطابق ہینڈل کریں۔
-
----
-
-**[English]**
-Khairpur Sukkuri and Aseel date palms require high-potassium nutrition and strict humidity monitoring:
-
-1. **Nutrient Feed:** Combine organic compost with localized drip-fed potassium nitrate to maximize pulp development during the 'Khalal' and 'Rutab' stages.
-2. **Fungal Protection:** Prevent root rot and fruit-spoilage mold by executing systematic high-efficiency under-canopy micro-sprinkling (at 38% optimized water savings compared to traditional flood trenches).
-3. **Export Compliance:** Align harvest handling with Saudi Food and Drug Authority (SFDA) phytosanitary requirements to clear custom quarantines instantly.`;
+  // --- SMART LOCAL MOCK ENGINE ---
+  
+  // 1. Language Detection
+  let lang: 'urdu_script' | 'roman_urdu' | 'english' = 'english';
+  
+  const hasUrduScript = /[\u0600-\u06FF]/.test(lastUserMessage);
+  if (hasUrduScript) {
+    lang = 'urdu_script';
+  } else {
+    // Check for common Roman Urdu words/signatures
+    const romanUrduKeywords = [
+      'kia', 'hal', 'kya', 'kese', 'ho', 'theek', 'thik', 'chawal', 'pani', 
+      'khajoor', 'khad', 'shehad', 'chara', 'muahida', 'pese', 'salam', 
+      'aamdeed', 'shukriya', 'shukria', 'kahan', 'kab', 'kaise', 'bilkul', 
+      'ha', 'hai', 'he', 'g', 'ji', 'assalam', 'walekum', 'walaikum', 'khaas'
+    ];
+    
+    const tokens = normalizedQuery.split(/\s+/);
+    const romanMatchCount = tokens.filter(t => romanUrduKeywords.includes(t)).length;
+    
+    if (romanMatchCount > 0 || normalizedQuery.includes("kia hal") || normalizedQuery.includes("kese ho") || normalizedQuery.includes("kaise ho")) {
+      lang = 'roman_urdu';
+    }
   }
 
-  // 3. Urdu / Roman Urdu for Contracts, Escrow, Payments
-  if (
-    normalizedQuery.includes("contract") || 
-    normalizedQuery.includes("escrow") || 
-    normalizedQuery.includes("blockchain") || 
-    normalizedQuery.includes("payment") ||
-    normalizedQuery.includes("معاہدہ") ||
-    normalizedQuery.includes("muahida") ||
-    normalizedQuery.includes("پیسے") ||
-    normalizedQuery.includes("pay")
-  ) {
-    return `**[Urdu / اردو]**
-ایگری برج (AgriBridge) کے تحت تجارتی معاہدے اور ادائیگی کا طریقہ کار:
+  const containsAny = (keywords: string[]) => keywords.some(k => normalizedQuery.includes(k));
 
-1. **ایسکرو گارنٹی (Escrow Guarantee):** خریدار کی رقم بینک میں محفوظ رہتی ہے۔ 30 فیصد رقم پاکستان سے روانگی (Phytosanitary Clearance) پر اور بقایا 70 فیصد رقم سعودی عرب کی بندرگاہ (Port Ingress) پر تصدیق کے بعد جاری کی جاتی ہے۔
-2. **سسٹین ایبلٹی کریڈٹس:** پانی کی بچت اور کاربن کریڈٹس خود کار طریقے سے بلاک چین پر رجسٹرڈ ہو جاتے ہیں، جو کاشتکار کی مارکیٹ ویلیو بڑھاتے ہیں۔
+  // 2. Topic Detection & Response Generation
 
----
+  // --- TOPIC: GREETING & SOCIAL ---
+  const greetingEnglish = ['hello', 'hi', 'hey', 'how are you', 'how is you', 'how r u', 'greetings', 'who are you', 'what is your name'];
+  const greetingRomanUrdu = ['salam', 'assalam', 'kia hal', 'kya haal', 'kese ho', 'kaise ho', 'kise ho', 'thik ho', 'theek ho'];
+  const greetingUrduScript = ['سلام', 'السلام علیکم', 'کیا حال', 'کیسے ہو', 'کیسے ہیں', 'کون ہو', 'نام کیا ہے'];
 
-**[English]**
-Trade agreements under AgriBridge follow a secure and automated settlement protocol:
-
-1. **Escrow Guarantee:** Buyer funds are secured, with 30% released upon pre-shipment phytosanitary clearance and 70% released upon port inspection at the destination.
-2. **Sustainability Credits:** Carbon offsets and water conservation certifications are automatically registered onto the agreement, supporting green initiatives.`;
+  if (lang === 'urdu_script' && containsAny(greetingUrduScript)) {
+    return `وعلیکم السلام! الحمدللہ، میں بالکل ٹھیک ہوں۔ آپ کیسے ہیں؟ ایگری برج (AgriBridge) پر آج میں آپ کی کیا مدد کر سکتا ہوں؟`;
+  }
+  if (lang === 'roman_urdu' && containsAny(greetingRomanUrdu)) {
+    return `Alhamdulillah! Main bilkul theek hoon. Aap kaise hain? Aaj main AgriBridge par aap ki kya madad kar sakta hoon?`;
+  }
+  if (lang === 'english' && containsAny(greetingEnglish)) {
+    return `Assalamu Alaikum! I am doing great, thank you for asking. How can I assist you with crop optimization, water management, or trade compliance on AgriBridge today?`;
   }
 
-  // 4. Urdu / Roman Urdu for Greetings and General Support
-  if (
-    normalizedQuery.includes("hello") || 
-    normalizedQuery.includes("hi") || 
-    normalizedQuery.includes("help") || 
-    normalizedQuery.includes("who") ||
-    normalizedQuery.includes("سلام") ||
-    normalizedQuery.includes("salam") ||
-    normalizedQuery.includes("آداب") ||
-    normalizedQuery.includes("مدد") ||
-    normalizedQuery.includes("madad")
-  ) {
-    return `السلام علیکم اور ایگری برج (AgriBridge) میں خوش آمدید! 🇵🇰 🤝 🇸🇦
-میں فصلوں کو بہتر بنانے، سعودی عرب کے برآمدی قوانین اور تجارت کے بارے میں آپ کی مدد کر سکتا ہوں:
+  // --- TOPIC: WATER / RICE / IRRIGATION ---
+  const waterEnglish = ['water', 'rice', 'irrigation', 'basmati', 'flood'];
+  const waterRomanUrdu = ['pani', 'chawal', 'basmati', 'abpashi', 'awd'];
+  const waterUrduScript = ['پانی', 'چاول', 'آبپاشی', 'باسمتی'];
 
-- مجھ سے پوچھیں: *"چاول کے لیے پانی کیسے بچایا جائے؟"* (How do I optimize water for rice?)
-- مجھ سے پوچھیں: *"کھجور کی فصل کی کھاد کا طریقہ کیا ہے؟"* (How to fertilize date palms?)
-- آپ اردو یا انگریزی، دونوں زبانوں میں سوال پوچھ سکتے ہیں!
-
----
-
-Assalamu Alaikum and welcome to AgriBridge!
-I can help you with crop optimization, trade compliance, and logistics planning:
-- Ask me: *"How do I optimize water for rice?"*
-- Ask me: *"How can Sindh date farmers comply with Saudi phytosanitary rules?"*
-- Feel free to ask anything about agricultural trade in Urdu or English!`;
+  if (lang === 'urdu_script' && (containsAny(waterUrduScript) || containsAny(waterEnglish))) {
+    return `باسمتی چاول کے لیے متبادل گیلا اور خشک کرنے (AWD) کا طریقہ کار استعمال کریں۔ سادہ 15cm پی وی سی پائپ سے نمی چیک کریں۔ جب پانی سطح سے 15 سینٹی میٹر نیچے جائے تب ہی پانی لگائیں۔ اس سے 42 فیصد تک پانی کی بچت ہوتی ہے۔`;
+  }
+  if (lang === 'roman_urdu' && (containsAny(waterRomanUrdu) || containsAny(waterEnglish))) {
+    return `Basmati chawal ke liye Alternate Wetting and Drying (AWD) ka tarika behtareen hai. 15cm PVC pipe se mitti ki nami check karein. Jab paani 15cm niche jaye tabhi paani lagayein. Is se 42% paani ki bachat hoti hai.`;
+  }
+  if (lang === 'english' && containsAny(waterEnglish)) {
+    return `To optimize Basmati rice, deploy the Alternate Wetting and Drying (AWD) protocol. Monitor soil moisture with a 15cm PVC field tube, and only irrigate when the water level drops below 15cm. This saves up to 42% of freshwater.`;
   }
 
-  // 5. Urdu / Roman Urdu for Honey and Sidr
-  if (
-    normalizedQuery.includes("honey") || 
-    normalizedQuery.includes("sidr") || 
-    normalizedQuery.includes("karak") ||
-    normalizedQuery.includes("شہد") ||
-    normalizedQuery.includes("shehad")
-  ) {
-    return `**[Urdu / اردو]**
-کرک، خیبر پختونخوا کا سدر (بیری) کا شہد سعودی عرب برآمد کرنے کے قوانین:
+  // --- TOPIC: DATES / FERTILIZER / KHAIRPUR ---
+  const datesEnglish = ['dates', 'palm', 'fertilizer', 'khairpur', 'potassium'];
+  const datesRomanUrdu = ['khajoor', 'khad', 'khairpur', 'potassium', 'fertilizer'];
+  const datesUrduScript = ['کھجور', 'کھاد', 'خیرپور', 'پوٹاشیم'];
 
-1. **کٹائی کا دورانیہ:** بیری کے شہد کی کٹائی اکتوبر سے دسمبر کے دوران بیری کے پھول کھلنے کے سیزن میں ہونی چاہیے تاکہ اسے پریمیم گریڈ مل سکے۔
-2. **کوالٹی کا معیار:** ایکسپورٹ گریڈ کے لیے شہد میں نمی کی مقدار 18 فیصد سے کم ہونی چاہیے، جس کی تصدیق ریفریکٹومیٹر ٹیسٹ سے ہوتی ہے۔
-3. **پیکجنگ:** شیشے کے جار میں سیل بند پیکنگ اور SFDA قانون 2024-44B کے تحت عربی اور انگریزی زبانوں میں لیبلنگ لازمی ہے۔
-
----
-
-**[English]**
-Sidr honey from Karak, Khyber Pakhtunkhwa is among the most prized exports to Saudi Arabia:
-
-1. **Harvesting Protocol:** Sidr honey must be harvested during the Ber tree (Ziziphus) bloom season (October–December) to ensure premium grade classification.
-2. **Quality Standard:** A+ Export Grade requires moisture content below 18%, verified by refractometer testing at the cooperative level.
-3. **Packaging Compliance:** Hermetically sealed food-grade glass jars stored below 20°C, with Arabic/English bilingual labeling per SFDA import regulation 2024-44B.`;
+  if (lang === 'urdu_script' && (containsAny(datesUrduScript) || containsAny(datesEnglish))) {
+    return `خیرپور کی اصیل اور سکھڑی کھجور کے لیے پوٹاشیم نائٹریٹ اور نامیاتی کھاد کا استعمال کریں۔ قطرہ قطرہ مائیکرو اسپرینکلنگ سسٹم اپنائیں تاکہ فنگس اور جڑوں کے سڑنے سے بچاؤ ہو اور 38 فیصد پانی بچے۔`;
+  }
+  if (lang === 'roman_urdu' && (containsAny(datesRomanUrdu) || containsAny(datesEnglish))) {
+    return `Khairpur ki Aseel aur Sukkuri khajoor ke liye Potassium Nitrate aur organic compost mix karein. Micro-sprinkling irrigation se 38% paani bachayein taake fungs aur roots sarne se bach saken.`;
+  }
+  if (lang === 'english' && containsAny(datesEnglish)) {
+    return `For Khairpur Sukkuri and Aseel date palms, apply potassium nitrate with organic compost. Adopt under-canopy micro-sprinkling to save 38% water and protect roots from fungal rot.`;
   }
 
-  // 6. Urdu / Roman Urdu for Alfalfa Feed
-  if (
-    normalizedQuery.includes("alfalfa") || 
-    normalizedQuery.includes("feed") || 
-    normalizedQuery.includes("livestock") ||
-    normalizedQuery.includes("چارہ") ||
-    normalizedQuery.includes("chara")
-  ) {
-    return `**[Urdu / اردو]**
-سعودی عرب کے مویشیوں کے شعبے کے لیے لوسرن (Alfalfa) چارہ برآمد کرنا:
+  // --- TOPIC: CONTRACTS / PAYMENTS / ESCROW ---
+  const contractEnglish = ['contract', 'payment', 'escrow', 'blockchain', 'safeguard', 'security'];
+  const contractRomanUrdu = ['muahida', 'pese', 'pay', 'escrow', 'blockchain', 'contract', 'adayegi'];
+  const contractUrduScript = ['معاہدہ', 'ادائیگی', 'پیسے', 'بلاک چین', 'ایسکرو'];
 
-1. **فصل کا چکر:** پنجاب میں لوسرن سیزن میں 6 سے 8 کٹائیاں دیتی ہے۔ دوبارہ پیداوار بڑھانے کے لیے کٹائی ہمیشہ زمین سے 2 سے 3 انچ اوپر کریں۔
-2. **پانی کی کارکردگی:** قطرہ قطرہ آبپاشی (Drip Irrigation) سے چارے کی کاشت میں پانی کی کھپت 38 فیصد تک کم ہوتی ہے۔
-3. **سعودی مانگ:** سعودی عرب سالانہ 2.5 ملین میٹرک ٹن سے زیادہ چارہ درآمد کرتا ہے—یہ پاکستانی کاشتکاروں کے لیے ایک بڑا منافع بخش موقع ہے۔
-
----
-
-**[English]**
-Organic alfalfa hay is a key feed crop for Saudi Arabia's livestock and dairy sector:
-
-1. **Crop Cycle:** Alfalfa in Punjab yields 6-8 cuttings per season. Optimal cutting height is 2-3 inches above the crown to promote regrowth.
-2. **Water Efficiency:** Drip irrigation combined with AWD scheduling reduces water consumption by up to 38% compared to flood irrigation.
-3. **Saudi Demand:** The Kingdom imports over 2.5 million metric tons of animal feed annually — a major market opportunity for Pakistani producers.`;
+  if (lang === 'urdu_script' && (containsAny(contractUrduScript) || containsAny(contractEnglish))) {
+    return `ایگری برج پر تجارتی ادائیگی انتہائی محفوظ ہے۔ 30 فیصد رقم پاکستان سے روانگی (فائٹوسینٹری تصدیق) پر اور بقایا 70 فیصد رقم سعودی عرب کی بندرگاہ پر پہنچنے اور تصدیق کے بعد جاری ہوتی ہے۔`;
+  }
+  if (lang === 'roman_urdu' && (containsAny(contractRomanUrdu) || containsAny(contractEnglish))) {
+    return `AgriBridge par payments bilkul secure hain. 30% payment Pakistan se phytosanitary clearance par aur baqi 70% Saudi port par inspection ke baad release hoti hai.`;
+  }
+  if (lang === 'english' && containsAny(contractEnglish)) {
+    return `AgriBridge trades use a secure escrow system: 30% is released upon pre-shipment phytosanitary clearance in Pakistan, and the remaining 70% is released after successful customs/port inspection in Saudi Arabia.`;
   }
 
-  return `السلام علیکم! مجھے آپ کا سوال موصول ہوا ہے: "${lastUserMessage}"
+  // --- TOPIC: HONEY / SIDR / KARAK ---
+  const honeyEnglish = ['honey', 'sidr', 'karak'];
+  const honeyRomanUrdu = ['shehad', 'sidr', 'karak', 'honey'];
+  const honeyUrduScript = ['شہد', 'سدر', 'کرک'];
 
-باسمتی چاول، کھجور، یا چارے کی برآمدی پیداوار بڑھانے کے لیے:
-- **Alternate Wetting & Drying (AWD)** کا طریقہ استعمال کریں۔
-- سعودی SFDA معیارات کے مطابق فائٹوسینٹری ریکارڈ رکھیں۔
-- مجھ سے بلا جھجھک مخصوص سوالات پوچھیں!
+  if (lang === 'urdu_script' && (containsAny(honeyUrduScript) || containsAny(honeyEnglish))) {
+    return `کرک کا سدر (بیری) شہد برآمد کرنے کے لیے: نمی 18 فیصد سے کم ہو، شیشے کے جار میں پیکنگ ہو اور سعودی SFDA قوانین کے مطابق عربی اور انگریزی زبانوں میں لیبلنگ لازمی ہے۔`;
+  }
+  if (lang === 'roman_urdu' && (containsAny(honeyRomanUrdu) || containsAny(honeyEnglish))) {
+    return `Karak ka premium Sidr (Ber) shehad export karne ke liye: Moisture 18% se kam rakhein, glass jars me pack karein, aur Saudi SFDA ke mutabiq Arabic/English bilingual label lagayein.`;
+  }
+  if (lang === 'english' && containsAny(honeyEnglish)) {
+    return `To export premium Karak Sidr (Ber) honey to Saudi Arabia, ensure moisture is below 18%, pack in glass jars, and apply bilingual Arabic/English labels in compliance with SFDA rules.`;
+  }
 
----
+  // --- TOPIC: ALFALFA / FEED / LIVESTOCK ---
+  const alfalfaEnglish = ['alfalfa', 'feed', 'livestock', 'hay'];
+  const alfalfaRomanUrdu = ['chara', 'feed', 'alfalfa', 'chare'];
+  const alfalfaUrduScript = ['چارہ', 'لوسرن', 'چارے'];
 
-Assalamu Alaikum! I have received your trade query: "${lastUserMessage}".
+  if (lang === 'urdu_script' && (containsAny(alfalfaUrduScript) || containsAny(alfalfaEnglish))) {
+    return `لوسرن (Alfalfa) چارے کی بہتر پیداوار کے لیے قطرہ قطرہ آبپاشی استعمال کریں (38 فیصد پانی کی بچت)۔ ہر کٹائی زمین سے 2 سے 3 انچ اوپر کریں تا کہ فصل کی دوبارہ نشوونما بہترین ہو۔`;
+  }
+  if (lang === 'roman_urdu' && (containsAny(alfalfaRomanUrdu) || containsAny(alfalfaEnglish))) {
+    return `Alfalfa (Lucerne) chara ke liye drip irrigation adopt karein. Cutting hamesha zameen se 2-3 inch upar se karein taake next yield (regrowth) bohot achi ho.`;
+  }
+  if (lang === 'english' && containsAny(alfalfaEnglish)) {
+    return `For alfalfa (lucerne) feed hay, use drip irrigation to save 38% water. Keep the cut height 2-3 inches above the soil crown to maximize regrowth.`;
+  }
 
-To optimize Basmati, Dates, or Feed crops for the Pakistan-Saudi supply chain:
-- Deploy **Alternate Wetting & Drying (AWD)** to maximize your Sustainability Score.
-- Maintain rigorous **phytosanitary logging** in alignment with SFDA standards.
-- Ask me specific questions about water conservation or trade agreements!`;
+  // --- DEFAULT FALLBACKS BY LANGUAGE ---
+  if (lang === 'urdu_script') {
+    return `ایگری برج (AgriBridge) فصلوں کی پیداوار، پانی کی بچت (AWD) اور سعودی عرب برآمدی قوانین کے متعلق آپ کی مدد کے لیے حاضر ہے۔ براہ کرم اپنا مخصوص سوال پوچھیں۔`;
+  }
+  if (lang === 'roman_urdu') {
+    return `AgriBridge crop yield, paani ki bachat (AWD), aur Saudi export compliance ke baare me aap ki madad kar sakta hai. Baraye meherbani apna sawal tafseel se batayein.`;
+  }
+  
+  return `Welcome to AgriBridge! I can help you with crop optimization, Alternate Wetting and Drying (AWD) irrigation, and Saudi SFDA trade compliance. How can I assist you today?`;
 }
 
 /**
