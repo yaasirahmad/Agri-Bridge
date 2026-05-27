@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Sprout, Briefcase, Activity, CheckCircle, Info, ChevronUp, ChevronDown } from 'lucide-react';
 import { CropSubmission, SupplierRow, SystemLog, ChatMessage } from './types';
-import { INITIAL_CROP_LOGS, INITIAL_SYSTEM_LOGS, SUPPLIER_DATA } from './data';import { sendGatewayChatMessage } from './lib/worker-client';
+import { INITIAL_CROP_LOGS, INITIAL_SYSTEM_LOGS, SUPPLIER_DATA } from './data';
+import { sendChatMessage } from './lib/api-client';
 
 // Portals
 import FarmerPortal from './app/farmer/page';
@@ -112,7 +113,7 @@ export default function App() {
         content: m.text,
       }));
 
-      const replyText = await sendGatewayChatMessage(chatParams);
+      const replyText = await sendChatMessage(chatParams);
 
       const assistantMsg: ChatMessage = {
         id: `msg-a-${Date.now()}`,

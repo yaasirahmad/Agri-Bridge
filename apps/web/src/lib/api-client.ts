@@ -30,7 +30,7 @@ export interface SupplierSearchDoc {
  * Intelligent agricultural advisory chat powered by contextual keyword matching.
  * Returns expert-level agronomy and trade compliance responses.
  */
-export async function sendGatewayChatMessage(messages: ChatMessageParam[]): Promise<string> {
+export async function sendChatMessage(messages: ChatMessageParam[]): Promise<string> {
   // Simulate realistic API latency for natural UX feel
   await new Promise((resolve) => setTimeout(resolve, 600 + Math.random() * 400));
 
@@ -96,7 +96,7 @@ To optimize Basmati, Dates, or Feed crops for the Pakistan-Saudi supply chain:
  * Intelligent document parser that simulates Gemini multimodal OCR extraction.
  * Returns structured certificate data based on document type.
  */
-export async function parseGatewayDocument(
+export async function parseDocument(
   fileBase64: string,
   fileName: string,
   docType: 'phyto' | 'soil' | 'halal'
@@ -133,7 +133,7 @@ export async function parseGatewayDocument(
  * Semantic supplier search and ranking engine.
  * Uses keyword relevance scoring to simulate Cohere Rerank behavior.
  */
-export async function searchAgriSuppliers(
+export async function searchSuppliers(
   query: string,
   documents: SupplierSearchDoc[]
 ): Promise<Array<SupplierSearchDoc & { relevanceScore: number }>> {

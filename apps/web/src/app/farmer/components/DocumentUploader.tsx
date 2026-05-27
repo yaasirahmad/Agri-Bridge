@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { UploadCloud, Loader2, Check, FileText, CheckCircle, Trash2 } from 'lucide-react';
-import { parseGatewayDocument } from '../../../lib/worker-client';
+import { parseDocument } from '../../../lib/api-client';
 
 interface DocumentUploaderProps {
   triggerNotification: (message: string, type: 'success' | 'info') => void;
@@ -67,7 +67,7 @@ export default function DocumentUploader({
       );
 
       try {
-        const parsed = await parseGatewayDocument(base64Data, file.name, selectedDocType);
+        const parsed = await parseDocument(base64Data, file.name, selectedDocType);
         
         const newDoc = {
           id: `doc-${Date.now().toString().slice(-4)}`,

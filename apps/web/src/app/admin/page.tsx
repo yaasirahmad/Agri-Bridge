@@ -42,7 +42,7 @@ export default function SystemAuditorPortalPage({
       {/* LEFT PORTION - System Node & Quota Progress Bars (4 columns) */}
       <div className="xl:col-span-4 flex flex-col gap-6" id="auditor-left-panel">
         
-        {/* Cloudflare Worker Edge routing tracker */}
+        {/* System Status Telemetry */}
         <HealthTelemetry latency={latency} />
 
         {/* API Quota progress indicators */}

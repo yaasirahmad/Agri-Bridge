@@ -24,7 +24,6 @@
     "noEmit": true
   },
   "exclude": [
-    "workers",
     "data",
     "node_modules",
     "dist"

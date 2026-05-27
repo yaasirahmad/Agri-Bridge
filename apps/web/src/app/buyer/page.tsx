@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Map, CheckCircle, FileText, Droplets, ArrowRight, Anchor, Plane, Award, Sparkles, Scale, Info, Layers } from 'lucide-react';
 import { SupplierRow } from '../../types';
 import { SUPPLIER_DATA } from '../../data';
-import { searchAgriSuppliers } from '../../lib/worker-client';
+import { searchSuppliers } from '../../lib/api-client';
 
 // Import divided components
 import AnalyticsPanel from './components/AnalyticsPanel';
@@ -42,7 +42,7 @@ export default function SaudiAgribusinessPortalPage({
       );
 
       try {
-        const ranked = await searchAgriSuppliers(searchTerm, SUPPLIER_DATA);
+        const ranked = await searchSuppliers(searchTerm, SUPPLIER_DATA);
         setSuppliers(ranked);
         triggerNotification(`Supplier search complete for "${searchTerm}"`, 'success');
       } catch (err) {
