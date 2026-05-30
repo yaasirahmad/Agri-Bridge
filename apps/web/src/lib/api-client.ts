@@ -91,10 +91,13 @@ export async function sendChatMessage(messages: ChatMessageParam[]): Promise<str
 
   // --- SMART LOCAL MOCK ENGINE ---
   
-  // 1. Language Detection
-  let lang: 'urdu_script' | 'roman_urdu' | 'english' = 'english';
+  // 1. Clean query & detect language
+  const cleanQuery = normalizedQuery.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").trim();
+  const words = cleanQuery.split(/\s+/);
   
+  let lang: 'urdu_script' | 'roman_urdu' | 'english' = 'english';
   const hasUrduScript = /[\u0600-\u06FF]/.test(lastUserMessage);
+  
   if (hasUrduScript) {
     lang = 'urdu_script';
   } else {
@@ -109,18 +112,53 @@ export async function sendChatMessage(messages: ChatMessageParam[]): Promise<str
       'behtar', 'behtareen', 'fasal', 'zameen', 'mausam', 'keera', 'bimari',
       'bechna', 'bhejna', 'aloo', 'pyaaz', 'aam', 'gandum', 'makki', 'makai'
     ];
-    
-    const tokens = normalizedQuery.split(/\s+/);
-    const romanMatchCount = tokens.filter(t => romanUrduKeywords.includes(t)).length;
-    
-    if (romanMatchCount > 0 || normalizedQuery.includes("kia hal") || normalizedQuery.includes("kese ho") || normalizedQuery.includes("kaise ho")) {
+    const romanMatchCount = words.filter(w => romanUrduKeywords.includes(w)).length;
+    if (romanMatchCount > 0 || cleanQuery.includes("kia hal") || cleanQuery.includes("kese ho") || cleanQuery.includes("kaise ho")) {
       lang = 'roman_urdu';
     }
   }
 
-  const containsAny = (keywords: string[]) => keywords.some(k => normalizedQuery.includes(k));
+  // 2. Check for Greetings / Social inputs first!
+  const urduGreetings = ['سلام', 'السلام علیکم', 'کیسے ہو', 'کیا حال', 'کیسے ہیں'];
+  const romanGreetings = ['salam', 'assalam', 'kia hal', 'kya haal', 'kese ho', 'kaise ho', 'thik ho', 'theek ho', 'hey', 'heyy'];
+  const englishGreetings = ['hi', 'hello', 'hey', 'greetings', 'good morning', 'good evening', 'good afternoon', 'how are you', 'how r u', 'how is you'];
 
-  // 2. CONCEPT DEFINITIONS DICTIONARY
+  const isGreeting = 
+    (lang === 'urdu_script' && (urduGreetings.some(g => cleanQuery.includes(g)) || cleanQuery === 'سلام')) ||
+    (lang === 'roman_urdu' && (romanGreetings.some(g => words.includes(g)) || cleanQuery.includes('kia hal') || cleanQuery.includes('kya haal'))) ||
+    (lang === 'english' && (englishGreetings.some(g => words.includes(g)) || cleanQuery === 'hi' || cleanQuery === 'hello' || cleanQuery.startsWith('hi ') || cleanQuery.startsWith('hello ') || cleanQuery.includes('how are you')));
+
+  if (isGreeting) {
+    if (lang === 'urdu_script') {
+      return `وعلیکم السلام! میں ایگری برج پر آپ کی کیا مدد کر سکتا ہوں؟`;
+    } else if (lang === 'roman_urdu') {
+      return `Assalam-o-Alaikum! Main AgriBridge par aap ki kya madad kar sakta hoon?`;
+    } else {
+      return `Hello! How can I assist you with crop optimization or trade compliance on AgriBridge today?`;
+    }
+  }
+
+  // Check for farewells/thanks
+  const urduFarewell = ['شکریہ', 'خدا حافظ', 'اللہ حافظ'];
+  const romanFarewell = ['shukriya', 'shukria', 'allah hafiz', 'khuda hafiz', 'bye'];
+  const englishFarewell = ['thank', 'thanks', 'bye', 'goodbye'];
+
+  const isFarewell = 
+    (lang === 'urdu_script' && urduFarewell.some(g => cleanQuery.includes(g))) ||
+    (lang === 'roman_urdu' && romanFarewell.some(g => words.includes(g))) ||
+    (lang === 'english' && englishFarewell.some(g => words.includes(g)));
+
+  if (isFarewell) {
+    if (lang === 'urdu_script') {
+      return `جزاک اللہ! اللہ حافظ۔ اگر مزید کوئی مدد چاہیے تو ضرور بتائیں۔`;
+    } else if (lang === 'roman_urdu') {
+      return `Khushamdeed! Allah hafiz! Mazeed koi sawal ho toh zaroor batayein.`;
+    } else {
+      return `You are welcome! Feel free to ask if you have any other questions.`;
+    }
+  }
+
+  // 3. CONCEPT DEFINITIONS DICTIONARY
   interface CropDefinition {
     keywords: string[];
     nameEn: string;
@@ -336,19 +374,19 @@ export async function sendChatMessage(messages: ChatMessageParam[]): Promise<str
     }
   ];
 
-  // 3. Match user query against lists
+  // 4. Match user query against lists
   const matchedCrops: CropDefinition[] = [];
   const matchedConcepts: ConceptDefinition[] = [];
   let matchedLocation = "";
 
   for (const crop of crops) {
-    if (crop.keywords.some(kw => normalizedQuery.includes(kw))) {
+    if (crop.keywords.some(kw => cleanQuery.includes(kw))) {
       matchedCrops.push(crop);
     }
   }
 
   for (const concept of concepts) {
-    if (concept.keywords.some(kw => normalizedQuery.includes(kw))) {
+    if (concept.keywords.some(kw => cleanQuery.includes(kw))) {
       matchedConcepts.push(concept);
     }
   }
@@ -357,13 +395,13 @@ export async function sendChatMessage(messages: ChatMessageParam[]): Promise<str
   const pkLocations = ['pakistan', 'punjab', 'sindh', 'multan', 'khairpur', 'karachi', 'lahore', 'sargodha', 'peshawar'];
   const saudiLocations = ['saudi', 'riyadh', 'jeddah', 'dammam', 'ksa'];
   
-  if (pkLocations.some(l => normalizedQuery.includes(l))) {
+  if (pkLocations.some(l => cleanQuery.includes(l))) {
     matchedLocation = "Pakistan";
-  } else if (saudiLocations.some(l => normalizedQuery.includes(l))) {
+  } else if (saudiLocations.some(l => cleanQuery.includes(l))) {
     matchedLocation = "Saudi Arabia";
   }
 
-  // 4. Synthesis of Response
+  // 5. Synthesis of Response
   if (matchedCrops.length > 0 || matchedConcepts.length > 0) {
     let responseText = "";
 
@@ -386,7 +424,7 @@ export async function sendChatMessage(messages: ChatMessageParam[]): Promise<str
       }).join(". ");
       let conceptText = matchedConcepts.map(c => {
         let details = c.detailsEn;
-        return `Concerning ${c.nameEn}, ${details}`;
+        return `Concerning the ${c.nameEn}, ${details}`;
       }).join(". ");
       let combined = [cropText, conceptText].filter(t => t.trim() !== "").join(". ");
       responseText = combined ? `${combined}.` : "I am retrieving details for this topic.";
@@ -395,37 +433,14 @@ export async function sendChatMessage(messages: ChatMessageParam[]): Promise<str
     return responseText;
   }
 
-  // SOCIAL AND CONVERSATIONAL CONTEXTS (If no direct crop/concept matches)
-  const socialUrdu = ['کیسے', 'طبیعت', 'کیا حال', 'ٹھیک', 'شکریہ', 'خدا حافظ', 'اللہ حافظ'];
-  const socialRoman = ['kia hal', 'kya haal', 'kese ho', 'kaise ho', 'thik ho', 'theek ho', 'shukriya', 'shukria', 'allah hafiz', 'khuda hafiz', 'acha'];
-  const socialEnglish = ['how are you', 'how is you', 'how r u', 'thank you', 'thanks', 'good job', 'perfect', 'awesome', 'bye', 'goodbye'];
-
+  // 6. Conversational fallbacks (Gemini-style: very direct, helpful, and concise)
   if (lang === 'urdu_script') {
-    if (containsAny(socialUrdu)) {
-      return `وعلیکم السلام! الحمدللہ، میں بالکل ٹھیک ہوں۔ بتائیے آج میں آپ کی کیا مدد کر سکتا ہوں؟`;
-    }
-    return `میں ایگری برج پر فصل کی رجسٹریشن، آبپاشی (AWD)، ایس ایف ڈی اے (SFDA) قوانین، قیمتوں اور شپنگ کے بارے میں آپ کی مدد کر سکتا ہوں۔ آپ کا سوال کیا ہے؟`;
+    return `میں ایگری برج پر پاکستانی فصلوں کی رجسٹریشن، متبادل آبپاشی (AWD)، سعودی قوانین (SFDA) اور شپنگ کی تفصیلات میں مدد کر سکتا ہوں۔ براہ کرم اپنا سوال واضح کریں۔`;
+  } else if (lang === 'roman_urdu') {
+    return `Main AgriBridge par crops ki registration, paani ki bachat (AWD), Saudi rules (SFDA) aur logistics pathways me madad kar sakta hoon. Please apna specific question batayein.`;
+  } else {
+    return `I can assist you with sustainable crops (such as Basmati rice, dates, honey, and alfalfa), NARC soil testing, SFDA compliance rules, secure escrow payments, and maritime logistics. Please specify what details you would like to know.`;
   }
-  
-  if (lang === 'roman_urdu') {
-    if (containsAny(socialRoman)) {
-      return `Alhamdulillah, main bilkul theek! Aap batayein, aaj main aap ki kya madad kar sakta hoon?`;
-    }
-    return `Main AgriBridge par crop registration, AWD irrigation, SFDA rules, pricing, aur shipping ke bare me madad kar sakta hoon. Aap ka kya sawal hai?`;
-  }
-
-  if (containsAny(socialEnglish)) {
-    if (normalizedQuery.includes("thank") || normalizedQuery.includes("goodbye") || normalizedQuery.includes("bye")) {
-      return `You are welcome! Feel free to ask if you have any other questions.`;
-    }
-    return `I am doing great, thank you! How can I assist you with your crops or trade queries today?`;
-  }
-
-  // Smart Context-Aware fallback that builds a response directly from their query words!
-  const queryNouns = lastUserMessage.split(/\s+/).filter(word => word.length > 4 && !['about', 'would', 'could', 'should', 'there', 'their', 'where', 'which', 'these', 'those'].includes(word.toLowerCase()));
-  const topicHint = queryNouns.length > 0 ? `"${queryNouns.slice(0, 3).join(", ")}"` : "your query";
-  
-  return `I don't have a direct answer for your query about ${topicHint} on AgriBridge. I can provide direct answers on sustainable Basmati Rice, Khairpur Dates, Karak Sidr Honey, Alfalfa Hay, Multan Corn, wheat, sugarcane, mangoes, SFDA phytosanitary compliance, logistics routes, or secure escrow payments. Please let me know what specific trade or crop details you would like to know!`;
 }
 
 /**
