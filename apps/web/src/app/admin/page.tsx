@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Cpu, Clock, Terminal, RefreshCw, AlertCircle, ShieldAlert, BarChart3, Database } from 'lucide-react';
+import { Cpu, Terminal, RefreshCw, BarChart3, Database } from 'lucide-react';
 import { SystemLog } from '../../types';
 
 // Import divided components
@@ -37,7 +37,7 @@ export default function SystemAuditorPortalPage({
   }, []);
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 w-full max-w-7xl mx-auto" id="auditor-portal-container font-sans">
+    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 w-full max-w-7xl mx-auto font-sans" id="auditor-portal-container">
       
       {/* LEFT PORTION - System Node & Quota Progress Bars (4 columns) */}
       <div className="xl:col-span-4 flex flex-col gap-6" id="auditor-left-panel">

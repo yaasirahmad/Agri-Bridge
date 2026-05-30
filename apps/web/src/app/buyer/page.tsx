@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Search, Map, CheckCircle, FileText, Droplets, ArrowRight, Anchor, Plane, Award, Sparkles, Scale, Info, Layers } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Search, FileText, Droplets, Anchor, Plane, Award, Sparkles, Scale, Info, Layers } from 'lucide-react';
 import { SupplierRow } from '../../types';
 import { SUPPLIER_DATA } from '../../data';
 import { searchSuppliers } from '../../lib/api-client';
@@ -25,6 +25,12 @@ export default function SaudiAgribusinessPortalPage({
   const [suppliers, setSuppliers] = useState<SupplierRow[]>(SUPPLIER_DATA);
   const [isSearching, setIsSearching] = useState(false);
 
+  // Stable references for callbacks to avoid re-triggering the search effect
+  const triggerNotificationRef = useRef(triggerNotification);
+  triggerNotificationRef.current = triggerNotification;
+  const onLogSystemActivityRef = useRef(onLogSystemActivity);
+  onLogSystemActivityRef.current = onLogSystemActivity;
+
   // Debounced live semantic Cohere search proxy
   useEffect(() => {
     if (!searchTerm.trim()) {
@@ -34,7 +40,7 @@ export default function SaudiAgribusinessPortalPage({
 
     const delayDebounce = setTimeout(async () => {
       setIsSearching(true);
-      onLogSystemActivity(
+      onLogSystemActivityRef.current(
         'Cohere.ai API',
         'POST',
         '/api/search',
@@ -44,7 +50,7 @@ export default function SaudiAgribusinessPortalPage({
       try {
         const ranked = await searchSuppliers(searchTerm, SUPPLIER_DATA);
         setSuppliers(ranked);
-        triggerNotification(`Supplier search complete for "${searchTerm}"`, 'success');
+        triggerNotificationRef.current(`Supplier search complete for "${searchTerm}"`, 'success');
       } catch (err) {
         console.error("Semantic search failed, falling back to local filter:", err);
         // Fallback to local filter

@@ -70,7 +70,7 @@ export default function SmartContractModal({
                   Agricultural Trade Agreement
                 </h2>
                 <p className="text-[11px] uppercase tracking-wider text-brand-gold font-sans font-bold mt-1">
-                  Saudi Vision 2030 &amp; Pakistan Vision 2030 Alliance
+                  Saudi Vision 2030 & Pakistan Vision 2030 Alliance
                 </p>
                 <p className="text-[10px] text-brand-muted font-sans mt-0.5">
                   Authorized under UN SDG 2: Zero Hunger Bilateral Food Security Pipeline
@@ -101,7 +101,7 @@ export default function SmartContractModal({
                   <div className="bg-brand-cream/60 p-3 rounded-lg border border-brand-green/5">
                     <span className="block text-[10px] text-brand-gold font-bold uppercase tracking-wider">THE SOVEREIGN BUYER / INVESTOR</span>
                     <span className="block font-serif font-bold text-brand-green text-sm mt-0.5">Saudi Agricultural Investment Company (SALIC)</span>
-                    <span className="block text-[11px] text-brand-muted">Ministry of Environment, Water &amp; Agriculture Hub</span>
+                    <span className="block text-[11px] text-brand-muted">Ministry of Environment, Water & Agriculture Hub</span>
                     <span className="block text-[11px] text-brand-muted">Riyadh, Kingdom of Saudi Arabia</span>
                   </div>
                   <div className="bg-brand-cream/60 p-3 rounded-lg border border-brand-green/5">
@@ -197,7 +197,7 @@ export default function SmartContractModal({
                   <div className="w-16 h-16 rounded-full border border-brand-gold/30 flex items-center justify-center p-1 mb-2 select-none">
                     <Scale className="w-8 h-8 text-brand-gold" />
                   </div>
-                  <span className="font-bold text-brand-green">MINISTRY OF ENVIRONMENT &amp; AGRICULTURE</span>
+                  <span className="font-bold text-brand-green">MINISTRY OF ENVIRONMENT & AGRICULTURE</span>
                   <span className="block text-[10px] text-brand-muted">Government of Saudi Arabia (Riyadh Hub)</span>
                   <span className="block font-mono text-[9px] text-green-600 mt-1">✓ DIGITALLY SEALED</span>
                 </div>
@@ -205,7 +205,7 @@ export default function SmartContractModal({
                   <div className="w-16 h-16 rounded-full border border-brand-gold/30 flex items-center justify-center p-1 mb-2 select-none">
                     <Award className="w-8 h-8 text-brand-gold" />
                   </div>
-                  <span className="font-bold text-brand-green">MINISTRY OF FOOD SECURITY &amp; RESEARCH</span>
+                  <span className="font-bold text-brand-green">MINISTRY OF FOOD SECURITY & RESEARCH</span>
                   <span className="block text-[10px] text-brand-muted">Government of Pakistan (Karachi Edge Node)</span>
                   <span className="block font-mono text-[9px] text-green-600 mt-1">✓ DIGITALLY SEALED</span>
                 </div>
@@ -227,7 +227,7 @@ export default function SmartContractModal({
                 onClick={onClose}
                 className="flex-1 sm:flex-none border border-brand-green/20 hover:border-brand-charcoal text-brand-charcoal hover:bg-zinc-100 font-serif text-sm font-semibold py-2.5 px-5 rounded-xl transition-all"
               >
-                Decline &amp; Edit
+                Decline & Edit
               </button>
               <button
                 onClick={onExecute}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Bot, Sparkles, User, Loader2, Send } from 'lucide-react';
 import { ChatMessage } from '../../../types';
 
@@ -14,6 +14,14 @@ export default function ZiraatChatPanel({
   isBotTyping,
 }: ZiraatChatPanelProps) {
   const [inputMessage, setInputMessage] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to the bottom when new messages arrive or bot starts typing
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages, isBotTyping]);
 
   const cleanMessageText = (text: string) => {
     return text
@@ -125,6 +133,7 @@ export default function ZiraatChatPanel({
             </div>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Form Input Area */}
