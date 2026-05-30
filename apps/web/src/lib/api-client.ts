@@ -368,71 +368,28 @@ export async function sendChatMessage(messages: ChatMessageParam[]): Promise<str
     let responseText = "";
 
     if (lang === 'urdu_script') {
-      let intro = "ایگری برج (AgriBridge) پر آپ کے سوال کے مطابق معلومات درج ذیل ہیں:\n\n";
-      let cropSection = "";
-      let conceptSection = "";
-      
-      if (matchedCrops.length > 0) {
-        cropSection = "🌾 **" + matchedCrops.map(c => c.nameUrdu).join(" اور ") + " کے بارے میں:**\n";
-        cropSection += matchedCrops.map(c => c.detailsUrdu).join("۔ ") + "۔\n\n";
-      }
-
-      if (matchedConcepts.length > 0) {
-        conceptSection = "⚙️ **" + matchedConcepts.map(c => c.nameUrdu).join(" اور ") + " کی تفصیلات:**\n";
-        conceptSection += matchedConcepts.map(c => c.detailsUrdu).join("۔ ") + "۔\n\n";
-      }
-
-      let outro = "آپ مزید تفصیلی رہنمائی کے لیے ہماری مٹی کے ٹیسٹ کی رپورٹ اپ لوڈ کر سکتے ہیں یا اپنے سودوں کو محفوظ بنانے کے لیے 'Sell Crops' پورٹل کا دورہ کر سکتے ہیں۔";
-      responseText = intro + cropSection + conceptSection + outro;
+      let cropText = matchedCrops.map(c => c.detailsUrdu).join("۔ ");
+      let conceptText = matchedConcepts.map(c => c.detailsUrdu).join("۔ ");
+      let combined = [cropText, conceptText].filter(t => t.trim() !== "").join("۔ ");
+      responseText = combined ? `${combined}۔` : "میں اس کے بارے میں معلومات تلاش کر رہا ہوں۔";
     }
     else if (lang === 'roman_urdu') {
-      let intro = "AgriBridge par aap ke sawal ke mutabiq details hazir hain:\n\n";
-      let cropSection = "";
-      let conceptSection = "";
-
-      if (matchedCrops.length > 0) {
-        cropSection = "🌾 **" + matchedCrops.map(c => c.nameRoman).join(" aur ") + " ke bare me:**\n";
-        cropSection += matchedCrops.map(c => c.detailsRoman).join(". ") + ".\n\n";
-      }
-
-      if (matchedConcepts.length > 0) {
-        conceptSection = "⚙️ **" + matchedConcepts.map(c => c.nameRoman).join(" aur ") + " ke mutabiq:**\n";
-        conceptSection += matchedConcepts.map(c => c.detailsRoman).join(". ") + ".\n\n";
-      }
-
-      let outro = "Faslon ki export aur NARC certificates ki verify karwane ke liye 'Sell Crops' portal par registration shuru karein.";
-      responseText = intro + cropSection + conceptSection + outro;
+      let cropText = matchedCrops.map(c => c.detailsRoman).join(". ");
+      let conceptText = matchedConcepts.map(c => c.detailsRoman).join(". ");
+      let combined = [cropText, conceptText].filter(t => t.trim() !== "").join(". ");
+      responseText = combined ? `${combined}.` : "Main is ke bare me details check kar raha hoon.";
     }
     else {
-      // English Dynamic Response
-      let intro = "Regarding your question about ";
-      const subjects: string[] = [];
-      if (matchedCrops.length > 0) {
-        subjects.push(matchedCrops.map(c => c.nameEn).join(" & "));
-      }
-      if (matchedConcepts.length > 0) {
-        subjects.push(matchedConcepts.map(c => c.nameEn).join(" & "));
-      }
-      if (matchedLocation) {
-        subjects.push(matchedLocation);
-      }
-      intro += subjects.join(" as well as ") + " on AgriBridge:\n\n";
-
-      let cropSection = "";
-      let conceptSection = "";
-
-      if (matchedCrops.length > 0) {
-        cropSection = "🌾 **" + matchedCrops.map(c => c.nameEn).join(" and ") + " Agricultural Advice:**\n";
-        cropSection += "For " + matchedCrops.map(c => c.nameEn).join(" and ") + " lots, producers should " + matchedCrops.map(c => c.detailsEn).join("; furthermore, they should ") + ".\n\n";
-      }
-
-      if (matchedConcepts.length > 0) {
-        conceptSection = "⚙️ **" + matchedConcepts.map(c => c.nameEn).join(" & ") + " Operational Guidelines:**\n";
-        conceptSection += "Concerning your query, " + matchedConcepts.map(c => c.detailsEn).join("; additionally, ") + ".\n\n";
-      }
-
-      let outro = "To begin trading this commodity or upload soil/phytosanitary certificates for official verification, navigate to the 'Sell Crops' tab or search for matching listings in the 'Find Suppliers' portal.";
-      responseText = intro + cropSection + conceptSection + outro;
+      let cropText = matchedCrops.map(c => {
+        let details = c.detailsEn;
+        return `For ${c.nameEn}, you should ${details}`;
+      }).join(". ");
+      let conceptText = matchedConcepts.map(c => {
+        let details = c.detailsEn;
+        return `Concerning ${c.nameEn}, ${details}`;
+      }).join(". ");
+      let combined = [cropText, conceptText].filter(t => t.trim() !== "").join(". ");
+      responseText = combined ? `${combined}.` : "I am retrieving details for this topic.";
     }
 
     return responseText;
@@ -445,35 +402,30 @@ export async function sendChatMessage(messages: ChatMessageParam[]): Promise<str
 
   if (lang === 'urdu_script') {
     if (containsAny(socialUrdu)) {
-      return `الحمدللہ! میں بالکل ٹھیک اور آپ کی مدد کے لیے تیار ہوں۔ ایگری برج (AgriBridge) پر میں آپ کی فصلوں، برآمدی سرٹیفکیٹس، آبپاشی (AWD)، قیمتوں، اور شپنگ لاجسٹکس کے حوالے سے رہنمائی کر سکتا ہوں۔ آپ کس چیز کے بارے میں جاننا چاہیں گے؟`;
+      return `وعلیکم السلام! الحمدللہ، میں بالکل ٹھیک ہوں۔ بتائیے آج میں آپ کی کیا مدد کر سکتا ہوں؟`;
     }
-    return `ایگری برج پر آپ کا پیغام موصول ہوا۔ میں ایک ذہین زرعی تجارتی معاون ہوں۔ آپ مجھ سے کسی بھی فصل (جیسے باسمتی چاول، خیرپور کھجور، سدر شہد، گندم، آم) کے برآمدی قوانین، مٹی کی تصدیق، پانی کی بچت (AWD)، بلاک چین معاہدوں، یا شپنگ روٹس کے بارے میں بلا جھجک پوچھ سکتے ہیں۔`;
+    return `میں ایگری برج پر فصل کی رجسٹریشن، آبپاشی (AWD)، ایس ایف ڈی اے (SFDA) قوانین، قیمتوں اور شپنگ کے بارے میں آپ کی مدد کر سکتا ہوں۔ آپ کا سوال کیا ہے؟`;
   }
   
   if (lang === 'roman_urdu') {
     if (containsAny(socialRoman)) {
-      return `Alhamdulillah! Main bilkul theek hoon aur aap ki rehnumai ke liye haazir hoon. Main AgriBridge par aap ki crops export, AWD irrigation, pricing, shipping, aur escrow payments ke bare me madad kar sakta hoon. Aap kis fasal ke baare me janana chahte hain?`;
+      return `Alhamdulillah, main bilkul theek! Aap batayein, aaj main aap ki kya madad kar sakta hoon?`;
     }
-    return `AgriBridge par aap ka sawal mila. Main ek smart agricultural assistant hoon. Aap mujh se chawal (rice), khajoor (dates), shehad (honey), chara (alfalfa), gandum (wheat), ya aam (mango) ki export, NARC soil test, SFDA certificates, ya escrow payments ke bare me sawal pooch sakte hain.`;
+    return `Main AgriBridge par crop registration, AWD irrigation, SFDA rules, pricing, aur shipping ke bare me madad kar sakta hoon. Aap ka kya sawal hai?`;
   }
 
   if (containsAny(socialEnglish)) {
-    return `Thank you! I am doing great and ready to assist you. I can guide you through every stage of the AgriBridge bilateral trade pipeline, including crop specifications (rice, dates, honey, mangoes, alfalfa, wheat, sugarcane, onions, potatoes), water-saving AWD irrigation, NARC/SFDA certificates, shipping transit, and secure escrow contracts. What trade or agronomy query can I resolve for you today?`;
+    if (normalizedQuery.includes("thank") || normalizedQuery.includes("goodbye") || normalizedQuery.includes("bye")) {
+      return `You are welcome! Feel free to ask if you have any other questions.`;
+    }
+    return `I am doing great, thank you! How can I assist you with your crops or trade queries today?`;
   }
 
   // Smart Context-Aware fallback that builds a response directly from their query words!
   const queryNouns = lastUserMessage.split(/\s+/).filter(word => word.length > 4 && !['about', 'would', 'could', 'should', 'there', 'their', 'where', 'which', 'these', 'those'].includes(word.toLowerCase()));
-  const topicHint = queryNouns.length > 0 ? `"${queryNouns.slice(0, 3).join(", ")}"` : "your interest";
+  const topicHint = queryNouns.length > 0 ? `"${queryNouns.slice(0, 3).join(", ")}"` : "your query";
   
-  return `Thank you for asking about ${topicHint}! 
-
-I am Ziraat AI, your expert agronomy and trade compliance advisor for AgriBridge (Pakistan-Saudi Arabia Sustainable Food Pipeline). While I don't have a specific pre-set answer for that exact phrasing, I can provide comprehensive guidance on how it applies to our platform:
-
-• If it relates to a crop: AgriBridge supports sustainable Basmati Rice, Khairpur Dates, Sidr Honey, Alfalfa Hay, Multan Corn, Sargodha Kinnow, Sindhri Mangoes, Sugarcane, Cotton, Potatoes, and Onions.
-• If it relates to export/compliance: All trade lots require a Phyto-sanitary Certificate, Halal Certificate, NARC Soil Health verification, and bilingual Arabic-English packaging labels meeting Saudi SFDA regulations.
-• If it relates to transactions: We guarantee both parties via a secure SNB Escrow trade agreement (30% released at Karachi Port pre-shipment, 70% upon Jeddah/Dammam port validation).
-
-Please let me know if you would like me to elaborate on crop-specific AWD water saving, compliance requirements, or secure payment details!`;
+  return `I don't have a direct answer for your query about ${topicHint} on AgriBridge. I can provide direct answers on sustainable Basmati Rice, Khairpur Dates, Karak Sidr Honey, Alfalfa Hay, Multan Corn, wheat, sugarcane, mangoes, SFDA phytosanitary compliance, logistics routes, or secure escrow payments. Please let me know what specific trade or crop details you would like to know!`;
 }
 
 /**
