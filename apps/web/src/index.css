@@ -21,4 +21,43 @@ body {
   color: var(--color-brand-charcoal);
   margin: 0;
   padding: 0;
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar Styles for premium feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF8F5;
+}
+::-webkit-scrollbar-thumb {
+  background: #CDA052;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #0d4632;
+}
+
+/* Custom cards with premium interactive micro-transitions */
+.bg-white.rounded-2xl, .bg-brand-green.rounded-2xl {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bg-white.rounded-2xl:hover, .bg-brand-green.rounded-2xl:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -10px rgba(1, 50, 32, 0.12);
+  border-color: rgba(205, 160, 82, 0.35);
+}
+
+/* Micro-animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+  100% { transform: translateY(0px); }
+}
+
+.float-anim {
+  animation: float 4s ease-in-out infinite;
 }
