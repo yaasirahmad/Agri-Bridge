@@ -14,13 +14,24 @@ export default function ZiraatChatPanel({
   isBotTyping,
 }: ZiraatChatPanelProps) {
   const [inputMessage, setInputMessage] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagePaneRef = useRef<HTMLDivElement>(null);
+  const isMountedRef = useRef(false);
 
-  // Auto-scroll to the bottom when new messages arrive or bot starts typing
+  // Auto-scroll inside the message container, avoiding window-level jumping
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (!messagePaneRef.current) return;
+
+    if (!isMountedRef.current) {
+      isMountedRef.current = true;
+      // Scroll immediately on initial load to keep the initial message visible
+      messagePaneRef.current.scrollTop = messagePaneRef.current.scrollHeight;
+      return;
     }
+
+    messagePaneRef.current.scrollTo({
+      top: messagePaneRef.current.scrollHeight,
+      behavior: 'smooth',
+    });
   }, [chatMessages, isBotTyping]);
 
   const cleanMessageText = (text: string) => {
@@ -91,8 +102,11 @@ export default function ZiraatChatPanel({
         </div>
       </div>
 
-      {/* Chat Messages Log */}
-      <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-brand-green/95" id="ai-message-pane">
+      <div
+        ref={messagePaneRef}
+        className="flex-1 p-4 overflow-y-auto space-y-4 bg-brand-green/95"
+        id="ai-message-pane"
+      >
         {chatMessages.map((msg) => (
           <div
             key={msg.id}
@@ -133,7 +147,6 @@ export default function ZiraatChatPanel({
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Form Input Area */}
